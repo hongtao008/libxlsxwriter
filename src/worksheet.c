@@ -275,6 +275,7 @@ _free_image_options(lxw_image_options *image)
     free(image->extension);
     free(image->url);
     free(image->tip);
+    free(image->image_buffer);
     free(image);
 }
 
@@ -5349,7 +5350,7 @@ worksheet_insert_image_opt(lxw_worksheet *self,
         return LXW_NO_ERROR;
     }
     else {
-        free(options);
+        _free_image_options(options);
         fclose(image_stream);
         return LXW_ERROR_IMAGE_DIMENSIONS;
     }
@@ -5364,6 +5365,98 @@ worksheet_insert_image(lxw_worksheet *self,
                        const char *filename)
 {
     return worksheet_insert_image_opt(self, row_num, col_num, filename, NULL);
+}
+
+lxw_error
+worksheet_insert_image_buffer_opt(lxw_worksheet *self,
+                                  lxw_row_t row_num, lxw_col_t col_num,
+                                  unsigned char *image_buffer,
+                                  size_t image_size,
+                                  const char *filename,
+                                  lxw_image_options *user_options)
+{
+    FILE *image_stream;
+    lxw_image_options *options;
+
+    if (!image_size) {
+        LXW_WARN("worksheet_insert_image_buffer()/_opt(): "
+                 "size must be non-zero.");
+        return LXW_ERROR_NULL_PARAMETER_IGNORED;
+    }
+
+    if (!filename) {
+        LXW_WARN("worksheet_insert_image_buffer()/_opt(): "
+                 "filename must be specified.");
+        return LXW_ERROR_NULL_PARAMETER_IGNORED;
+    }
+
+    /* Write the image buffer to a temporary file so we can read the
+     * dimensions like an ordinary file. */
+    image_stream = lxw_tmpfile(self->tmpdir);
+    fwrite(image_buffer, 1, image_size, image_stream);
+    rewind(image_stream);
+
+    /* Create a new object to hold the image options. */
+    options = calloc(1, sizeof(lxw_image_options));
+    if (!options) {
+        fclose(image_stream);
+        return LXW_ERROR_MEMORY_MALLOC_FAILED;
+    }
+
+    /* Store the image data in the options structure. */
+    options->image_buffer = calloc(1, image_size);
+    if (!options->image_buffer) {
+        _free_image_options(options);
+        fclose(image_stream);
+        return LXW_ERROR_MEMORY_MALLOC_FAILED;
+    }
+    else {
+        memcpy(options->image_buffer, image_buffer, image_size);
+        options->image_buffer_size = image_size;
+        options->is_image_buffer = LXW_TRUE;
+    }
+
+    if (user_options) {
+        options->x_offset = user_options->x_offset;
+        options->y_offset = user_options->y_offset;
+        options->x_scale = user_options->x_scale;
+        options->y_scale = user_options->y_scale;
+    }
+
+    /* Copy other options or set defaults. */
+    options->filename = lxw_strdup(filename);
+    options->short_name = lxw_strdup(filename);
+    options->stream = image_stream;
+    options->row = row_num;
+    options->col = col_num;
+
+    if (!options->x_scale)
+        options->x_scale = 1;
+
+    if (!options->y_scale)
+        options->y_scale = 1;
+
+    if (_get_image_properties(options) == LXW_NO_ERROR) {
+        STAILQ_INSERT_TAIL(self->image_data, options, list_pointers);
+        fclose(image_stream);
+        return LXW_NO_ERROR;
+    }
+    else {
+        _free_image_options(options);
+        fclose(image_stream);
+        return LXW_ERROR_IMAGE_DIMENSIONS;
+    }
+}
+
+lxw_error
+worksheet_insert_image_buffer(lxw_worksheet *self,
+                              lxw_row_t row_num, lxw_col_t col_num,
+                              unsigned char *image_buffer,
+                              size_t image_size, const char *filename)
+{
+    return worksheet_insert_image_buffer_opt(self, row_num, col_num,
+                                             image_buffer, image_size,
+                                             filename, NULL);
 }
 
 /*

@@ -1,14 +1,14 @@
 /*
  * Tests for the libxlsxwriter library.
  *
- * Copyright 2014-2018, John McNamara, jmcnamara@cpan.org
+ * Copyright 2014-2021, John McNamara, jmcnamara@cpan.org
  *
  */
 
 #include "../ctest.h"
 #include "../helper.h"
 
-#include "xlsxwriter/workbook.h"
+#include "../../../include/xlsxwriter/workbook.h"
 
 /* Test the _write_defined_name() method. */
 CTEST(workbook, write_defined_name) {

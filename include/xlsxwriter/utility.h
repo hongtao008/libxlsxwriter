@@ -1,7 +1,7 @@
 /*
  * libxlsxwriter
  *
- * Copyright 2014-2018, John McNamara, jmcnamara@cpan.org. See LICENSE.txt.
+ * Copyright 2014-2021, John McNamara, jmcnamara@cpan.org. See LICENSE.txt.
  */
 
 /**
@@ -9,7 +9,7 @@
  *
  * @brief Utility functions for libxlsxwriter.
  *
- * <!-- Copyright 2014-2018, John McNamara, jmcnamara@cpan.org -->
+ * <!-- Copyright 2014-2021, John McNamara, jmcnamara@cpan.org -->
  *
  */
 
@@ -17,6 +17,9 @@
 #define __LXW_UTILITY_H__
 
 #include <stdint.h>
+#ifndef _MSC_VER
+#include <strings.h>
+#endif
 #include "common.h"
 #include "xmlwriter.h"
 
@@ -87,6 +90,34 @@ extern "C" {
 /* *INDENT-ON* */
 
 /**
+ * @brief Retrieve the library version.
+ *
+ * @return The "X.Y.Z" version string.
+ *
+ * Get the library version as a "X.Y.Z" version string
+ *
+ *  @code
+ *      printf("Libxlsxwriter version = %s\n", lxw_version());
+ *  @endcode
+ *
+ */
+const char *lxw_version(void);
+
+/**
+ * @brief Retrieve the library version ID.
+ *
+ * @return The version ID.
+ *
+ * Get the library version such as "X.Y.Z" as a XYZ integer.
+ *
+ *  @code
+ *      printf("Libxlsxwriter version id = %d\n", lxw_version_id());
+ *  @endcode
+ *
+ */
+uint16_t lxw_version_id(void);
+
+/**
  * @brief Converts a libxlsxwriter error number to a string.
  *
  * The `%lxw_strerror` function converts a libxlsxwriter error number defined
@@ -140,10 +171,32 @@ void lxw_rowcol_to_formula_abs(char *formula, const char *sheetname,
 
 uint32_t lxw_name_to_row(const char *row_str);
 uint16_t lxw_name_to_col(const char *col_str);
+
 uint32_t lxw_name_to_row_2(const char *row_str);
 uint16_t lxw_name_to_col_2(const char *col_str);
 
-double lxw_datetime_to_excel_date(lxw_datetime *datetime, uint8_t date_1904);
+/**
+ * @brief Converts a #lxw_datetime to an Excel datetime number.
+ *
+ * @param datetime A pointer to a #lxw_datetime struct.
+ *
+ * @return A double representing an Excel datetime.
+ *
+ * The `%lxw_datetime_to_excel_datetime()` function converts a datetime in
+ * #lxw_datetime to and Excel datetime number:
+ *
+ * @code
+ *     lxw_datetime datetime = {2013, 2, 28, 12, 0, 0.0};
+ *
+ *     double excel_datetime = lxw_datetime_to_excel_date(&datetime);
+ * @endcode
+ *
+ * See @ref working_with_dates for more details on the Excel datetime format.
+ */
+double lxw_datetime_to_excel_datetime(lxw_datetime *datetime);
+
+double lxw_datetime_to_excel_date_epoch(lxw_datetime *datetime,
+                                        uint8_t date_1904);
 
 char *lxw_strdup(const char *str);
 char *lxw_strdup_formula(const char *formula);
@@ -152,7 +205,15 @@ size_t lxw_utf8_strlen(const char *str);
 
 void lxw_str_tolower(char *str);
 
+/* Define a portable version of strcasecmp(). */
+#ifdef _MSC_VER
+#define lxw_strcasecmp _stricmp
+#else
+#define lxw_strcasecmp strcasecmp
+#endif
+
 FILE *lxw_tmpfile(char *tmpdir);
+FILE *lxw_fopen(const char *filename, const char *mode);
 
 /* Use a user defined function to format doubles in sprintf or else a simple
  * macro (the default). */
@@ -162,6 +223,8 @@ int lxw_sprintf_dbl(char *data, double number);
 #define lxw_sprintf_dbl(data, number) \
         lxw_snprintf(data, LXW_ATTR_32, "%.16g", number)
 #endif
+
+uint16_t lxw_hash_password(const char *password);
 
 /* *INDENT-OFF* */
 #ifdef __cplusplus

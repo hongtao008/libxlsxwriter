@@ -1,7 +1,7 @@
 /*
  * libxlsxwriter
  *
- * Copyright 2014-2018, John McNamara, jmcnamara@cpan.org. See LICENSE.txt.
+ * Copyright 2014-2021, John McNamara, jmcnamara@cpan.org. See LICENSE.txt.
  */
 
 /**
@@ -9,7 +9,7 @@
  *
  * @brief Common functions and defines for the libxlsxwriter library.
  *
- * <!-- Copyright 2014-2018, John McNamara, jmcnamara@cpan.org -->
+ * <!-- Copyright 2014-2021, John McNamara, jmcnamara@cpan.org -->
  *
  */
 #ifndef __LXW_COMMON_H__
@@ -23,6 +23,14 @@
 #define STATIC static
 #else
 #define STATIC
+#endif
+
+#if __GNUC__ >= 5
+#define DEPRECATED(func, msg) func __attribute__ ((deprecated(msg)))
+#elif defined(_MSC_VER)
+#define DEPRECATED(func, msg) __declspec(deprecated, msg) func
+#else
+#define DEPRECATED(func, msg) func
 #endif
 
 /** Integer data type to represent a row value. Equivalent to `uint32_t`.
@@ -65,14 +73,29 @@ typedef enum lxw_error {
     /** Error encountered when creating a tmpfile during file assembly. */
     LXW_ERROR_CREATING_TMPFILE,
 
-    /** Zlib error with a file operation while creating xlsx file. */
+    /** Error reading a tmpfile. */
+    LXW_ERROR_READING_TMPFILE,
+
+    /** Zip generic error ZIP_ERRNO while creating the xlsx file. */
     LXW_ERROR_ZIP_FILE_OPERATION,
 
-    /** Zlib error when adding sub file to xlsx file. */
+    /** Zip error ZIP_PARAMERROR while creating the xlsx file. */
+    LXW_ERROR_ZIP_PARAMETER_ERROR,
+
+    /** Zip error ZIP_BADZIPFILE (use_zip64 option may be required). */
+    LXW_ERROR_ZIP_BAD_ZIP_FILE,
+
+    /** Zip error ZIP_INTERNALERROR while creating the xlsx file. */
+    LXW_ERROR_ZIP_INTERNAL_ERROR,
+
+    /** File error or unknown zip error when adding sub file to xlsx file. */
     LXW_ERROR_ZIP_FILE_ADD,
 
-    /** Zlib error when closing xlsx file. */
+    /** Unknown zip error when closing xlsx file. */
     LXW_ERROR_ZIP_CLOSE,
+
+    /** Feature is not currently supported in this configuration. */
+    LXW_ERROR_FEATURE_NOT_SUPPORTED,
 
     /** NULL function parameter ignored. */
     LXW_ERROR_NULL_PARAMETER_IGNORED,
@@ -83,8 +106,11 @@ typedef enum lxw_error {
     /** Worksheet name exceeds Excel's limit of 31 characters. */
     LXW_ERROR_SHEETNAME_LENGTH_EXCEEDED,
 
-    /** Worksheet name contains invalid Excel character: '[]:*?/\\' */
+    /** Worksheet name cannot contain invalid characters: '[ ] : * ? / \\' */
     LXW_ERROR_INVALID_SHEETNAME_CHARACTER,
+
+    /** Worksheet name cannot start or end with an apostrophe. */
+    LXW_ERROR_SHEETNAME_START_END_APOSTROPHE,
 
     /** Worksheet name is already in use. */
     LXW_ERROR_SHEETNAME_ALREADY_USED,
@@ -106,6 +132,9 @@ typedef enum lxw_error {
 
     /** Worksheet row or column index out of range. */
     LXW_ERROR_WORKSHEET_INDEX_OUT_OF_RANGE,
+
+    /** Maximum hyperlink length (2079) exceeded. */
+    LXW_ERROR_WORKSHEET_MAX_URL_LENGTH_EXCEEDED,
 
     /** Maximum number of worksheet URLs (65530) exceeded. */
     LXW_ERROR_WORKSHEET_MAX_NUMBER_URLS_EXCEEDED,
@@ -146,6 +175,9 @@ enum lxw_custom_property_types {
     LXW_CUSTOM_DATETIME
 };
 
+/* Size of MD5 byte arrays. */
+#define LXW_MD5_SIZE              16
+
 /* Excel sheetname max of 31 chars. */
 #define LXW_SHEETNAME_MAX         31
 
@@ -170,12 +202,18 @@ enum lxw_custom_property_types {
 /* Datetime string length. */
 #define LXW_DATETIME_LENGTH       sizeof("2016-12-12T23:00:00Z")
 
+/* GUID string length. */
+#define LXW_GUID_LENGTH           sizeof("{12345678-1234-1234-1234-1234567890AB}")
+
 #define LXW_EPOCH_1900            0
 #define LXW_EPOCH_1904            1
 
 #define LXW_UINT32_T_LENGTH       sizeof("4294967296")
 #define LXW_FILENAME_LENGTH       128
 #define LXW_IGNORE                1
+
+#define LXW_PORTRAIT              1
+#define LXW_LANDSCAPE             0
 
 #define LXW_SCHEMA_MS        "http://schemas.microsoft.com/office/2006/relationships"
 #define LXW_SCHEMA_ROOT      "http://schemas.openxmlformats.org"
@@ -185,8 +223,18 @@ enum lxw_custom_property_types {
 #define LXW_SCHEMA_DOCUMENT  LXW_SCHEMA_ROOT "/officeDocument/2006/relationships"
 #define LXW_SCHEMA_CONTENT   LXW_SCHEMA_ROOT "/package/2006/content-types"
 
+/* Use REprintf() for error handling when compiled as an R library. */
+#ifdef USE_R_LANG
+#include <R.h>
+#define LXW_PRINTF REprintf
+#define LXW_STDERR
+#else
+#define LXW_PRINTF fprintf
+#define LXW_STDERR stderr,
+#endif
+
 #define LXW_ERROR(message)                      \
-    fprintf(stderr, "[ERROR][%s:%d]: " message "\n", __FILE__, __LINE__)
+    LXW_PRINTF(LXW_STDERR "[ERROR][%s:%d]: " message "\n", __FILE__, __LINE__)
 
 #define LXW_MEM_ERROR()                         \
     LXW_ERROR("Memory allocation failed.")
@@ -213,65 +261,73 @@ enum lxw_custom_property_types {
     if (error)                                  \
         return error;
 
+#define RETURN_AND_ZIPCLOSE_ON_ERROR(error)     \
+    if (error) {                                \
+        zipClose(self->zipfile, NULL);          \
+        return error;                           \
+}
+
 #define LXW_WARN(message)                       \
-    fprintf(stderr, "[WARNING]: " message "\n")
+    LXW_PRINTF(LXW_STDERR "[WARNING]: " message "\n")
 
 /* We can't use variadic macros here since we support ANSI C. */
 #define LXW_WARN_FORMAT(message)                \
-    fprintf(stderr, "[WARNING]: " message "\n")
+    LXW_PRINTF(LXW_STDERR "[WARNING]: " message "\n")
 
 #define LXW_WARN_FORMAT1(message, var)          \
-    fprintf(stderr, "[WARNING]: " message "\n", var)
+    LXW_PRINTF(LXW_STDERR "[WARNING]: " message "\n", var)
 
 #define LXW_WARN_FORMAT2(message, var1, var2)    \
-    fprintf(stderr, "[WARNING]: " message "\n", var1, var2)
+    LXW_PRINTF(LXW_STDERR "[WARNING]: " message "\n", var1, var2)
 
 /* Chart axis type checks. */
 #define LXW_WARN_CAT_AXIS_ONLY(function)                                   \
     if (!axis->is_category) {                                              \
-        fprintf(stderr, "[WARNING]: "                                      \
+        LXW_PRINTF(LXW_STDERR "[WARNING]: "                                \
                 function "() is only valid for category axes\n");          \
        return;                                                             \
     }
 
 #define LXW_WARN_VALUE_AXIS_ONLY(function)                                 \
     if (!axis->is_value) {                                                 \
-        fprintf(stderr, "[WARNING]: "                                      \
+        LXW_PRINTF(LXW_STDERR "[WARNING]: "                                \
                 function "() is only valid for value axes\n");             \
        return;                                                             \
     }
 
 #define LXW_WARN_DATE_AXIS_ONLY(function)                                  \
     if (!axis->is_date) {                                                  \
-        fprintf(stderr, "[WARNING]: "                                      \
+        LXW_PRINTF(LXW_STDERR "[WARNING]: "                                \
                 function "() is only valid for date axes\n");              \
        return;                                                             \
     }
 
 #define LXW_WARN_CAT_AND_DATE_AXIS_ONLY(function)                          \
     if (!axis->is_category && !axis->is_date) {                            \
-        fprintf(stderr, "[WARNING]: "                                      \
+        LXW_PRINTF(LXW_STDERR "[WARNING]: "                                \
                 function "() is only valid for category and date axes\n"); \
        return;                                                             \
     }
 
 #define LXW_WARN_VALUE_AND_DATE_AXIS_ONLY(function)                        \
     if (!axis->is_value && !axis->is_date) {                               \
-        fprintf(stderr, "[WARNING]: "                                      \
+        LXW_PRINTF(LXW_STDERR "[WARNING]: "                                \
                 function "() is only valid for value and date axes\n");    \
        return;                                                             \
     }
 
 #ifndef LXW_BIG_ENDIAN
+#define LXW_UINT16_HOST(n)    (n)
+#define LXW_UINT32_HOST(n)    (n)
+#define LXW_UINT16_NETWORK(n) ((((n) & 0x00FF) << 8) | (((n) & 0xFF00) >> 8))
 #define LXW_UINT32_NETWORK(n) ((((n) & 0xFF)       << 24) | \
                                (((n) & 0xFF00)     <<  8) | \
                                (((n) & 0xFF0000)   >>  8) | \
                                (((n) & 0xFF000000) >> 24))
-#define LXW_UINT16_NETWORK(n) ((((n) & 0x00FF) << 8) | (((n) & 0xFF00) >> 8))
-#define LXW_UINT32_HOST(n)    (n)
 #else
-#define LXW_UINT32_NETWORK(n) (n)
 #define LXW_UINT16_NETWORK(n) (n)
+#define LXW_UINT32_NETWORK(n) (n)
+#define LXW_UINT16_HOST(n)    ((((n) & 0x00FF) << 8) | (((n) & 0xFF00) >> 8))
 #define LXW_UINT32_HOST(n)    ((((n) & 0xFF)       << 24) | \
                                (((n) & 0xFF00)     <<  8) | \
                                (((n) & 0xFF0000)   >>  8) | \

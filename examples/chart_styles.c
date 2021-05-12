@@ -3,7 +3,7 @@
  * using the libxlsxwriter library. Note, these styles are not the same as the
  * styles available in Excel 2013.
  *
- * Copyright 2014-2017, John McNamara, jmcnamara@cpan.org
+ * Copyright 2014-2018, John McNamara, jmcnamara@cpan.org
  *
  */
 
@@ -19,7 +19,7 @@ int main() {
     lxw_worksheet *worksheet;
     lxw_chart *chart;
 
-    lxw_workbook  *workbook  = new_workbook("chart_styles.xlsx");
+    lxw_workbook  *workbook  = workbook_new("chart_styles.xlsx");
 
 
     for (chart_num = 0; chart_num < 4; chart_num++) {

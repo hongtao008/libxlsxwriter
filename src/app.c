@@ -3,7 +3,7 @@
  *
  * Used in conjunction with the libxlsxwriter library.
  *
- * Copyright 2014-2018, John McNamara, jmcnamara@cpan.org. See LICENSE.txt.
+ * Copyright 2014-2021, John McNamara, jmcnamara@cpan.org. See LICENSE.txt.
  *
  */
 
@@ -25,7 +25,7 @@
  * Create a new app object.
  */
 lxw_app *
-lxw_app_new()
+lxw_app_new(void)
 {
     lxw_app *app = calloc(1, sizeof(lxw_app));
     GOTO_LABEL_ON_MEM_ERROR(app, mem_error);
@@ -132,7 +132,10 @@ _write_application(lxw_app *self)
 STATIC void
 _write_doc_security(lxw_app *self)
 {
-    lxw_xml_data_element(self->file, "DocSecurity", "0", NULL);
+    if (self->doc_security == 2)
+        lxw_xml_data_element(self->file, "DocSecurity", "2", NULL);
+    else
+        lxw_xml_data_element(self->file, "DocSecurity", "0", NULL);
 }
 
 /*

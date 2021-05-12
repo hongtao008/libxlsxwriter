@@ -1,14 +1,14 @@
 /*
  * Tests for the lib_xlsx_writer library.
  *
- * Copyright 2014-2018, John McNamara, jmcnamara@cpan.org
+ * Copyright 2014-2021, John McNamara, jmcnamara@cpan.org
  *
  */
 
 #include "../ctest.h"
 #include "../helper.h"
 
-#include "xlsxwriter/styles.h"
+#include "../../../include/xlsxwriter/styles.h"
 
 // Test the _write_border() function.
 CTEST(styles, write_border) {
@@ -22,7 +22,7 @@ CTEST(styles, write_border) {
 
     styles->file = testfile;
 
-    _write_border(styles, format);
+    _write_border(styles, format, LXW_FALSE);
 
     RUN_XLSX_STREQ(exp, got);
 

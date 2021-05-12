@@ -1,14 +1,14 @@
 /*
  * Tests for the lib_xlsx_writer library.
  *
- * Copyright 2014-2018, John McNamara, jmcnamara@cpan.org
+ * Copyright 2014-2021, John McNamara, jmcnamara@cpan.org
  *
  */
 
 #include "../ctest.h"
 #include "../helper.h"
 
-#include "xlsxwriter/app.h"
+#include "../../../include/xlsxwriter/app.h"
 
 // Test assembling a complete App file.
 CTEST(app, app01) {

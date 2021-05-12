@@ -1,7 +1,7 @@
 /*
  * An example of creating Excel radar charts using the libxlsxwriter library.
  *
- * Copyright 2014-2017, John McNamara, jmcnamara@cpan.org
+ * Copyright 2014-2018, John McNamara, jmcnamara@cpan.org
  *
  */
 
@@ -37,7 +37,7 @@ void write_worksheet_data(lxw_worksheet *worksheet, lxw_format *bold) {
  */
 int main() {
 
-    lxw_workbook     *workbook  = new_workbook("chart_radar.xlsx");
+    lxw_workbook     *workbook  = workbook_new("chart_radar.xlsx");
     lxw_worksheet    *worksheet = workbook_add_worksheet(workbook, NULL);
     lxw_chart_series *series;
 
@@ -58,7 +58,7 @@ int main() {
     series = chart_add_series(chart, "=Sheet1!$A$2:$A$7", "=Sheet1!$B$2:$B$7");
 
     /* Set the name for the series instead of the default "Series 1". */
-    chart_series_set_name(series, "=Sheet1!$B1$1");
+    chart_series_set_name(series, "=Sheet1!$B$1");
 
     /* Add a second series but leave the categories and values undefined. They
      * can be defined later using the alternative syntax shown below.  */
@@ -90,13 +90,13 @@ int main() {
     series = chart_add_series(chart, "=Sheet1!$A$2:$A$7", "=Sheet1!$B$2:$B$7");
 
     /* Set the name for the series instead of the default "Series 1". */
-    chart_series_set_name(series, "=Sheet1!$B1$1");
+    chart_series_set_name(series, "=Sheet1!$B$1");
 
     /* Add the second series to the chart. */
     series = chart_add_series(chart, "=Sheet1!$A$2:$A$7", "=Sheet1!$C$2:$C$7");
 
     /* Set the name for the series instead of the default "Series 2". */
-    chart_series_set_name(series, "=Sheet1!$C1$1");
+    chart_series_set_name(series, "=Sheet1!$C$1");
 
     /* Add a chart title and some axis labels. */
     chart_title_set_name(chart,        "Results of sample analysis");
@@ -119,13 +119,13 @@ int main() {
     series = chart_add_series(chart, "=Sheet1!$A$2:$A$7", "=Sheet1!$B$2:$B$7");
 
     /* Set the name for the series instead of the default "Series 1". */
-    chart_series_set_name(series, "=Sheet1!$B1$1");
+    chart_series_set_name(series, "=Sheet1!$B$1");
 
     /* Add the second series to the chart. */
     series = chart_add_series(chart, "=Sheet1!$A$2:$A$7", "=Sheet1!$C$2:$C$7");
 
     /* Set the name for the series instead of the default "Series 2". */
-    chart_series_set_name(series, "=Sheet1!$C1$1");
+    chart_series_set_name(series, "=Sheet1!$C$1");
 
     /* Add a chart title and some axis labels. */
     chart_title_set_name(chart,        "Results of sample analysis");

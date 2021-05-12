@@ -1,14 +1,14 @@
 /*
  * Tests for the libxlsxwriter library.
  *
- * Copyright 2014-2018, John McNamara, jmcnamara@cpan.org
+ * Copyright 2014-2021, John McNamara, jmcnamara@cpan.org
  *
  */
 
 #include "../ctest.h"
 #include "../helper.h"
 
-#include "xlsxwriter/utility.h"
+#include "../../../include/xlsxwriter/utility.h"
 
 
 // Test _datetime_to_excel_date().

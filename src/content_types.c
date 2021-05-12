@@ -3,7 +3,7 @@
  *
  * Used in conjunction with the libxlsxwriter library.
  *
- * Copyright 2014-2018, John McNamara, jmcnamara@cpan.org. See LICENSE.txt.
+ * Copyright 2014-2021, John McNamara, jmcnamara@cpan.org. See LICENSE.txt.
  *
  */
 
@@ -25,7 +25,7 @@
  * Create a new content_types object.
  */
 lxw_content_types *
-lxw_content_types_new()
+lxw_content_types_new(void)
 {
     lxw_content_types *content_types = calloc(1, sizeof(lxw_content_types));
     GOTO_LABEL_ON_MEM_ERROR(content_types, mem_error);
@@ -50,8 +50,6 @@ lxw_content_types_new()
                         LXW_APP_DOCUMENT "spreadsheetml.styles+xml");
     lxw_ct_add_override(content_types, "/xl/theme/theme1.xml",
                         LXW_APP_DOCUMENT "theme+xml");
-    lxw_ct_add_override(content_types, "/xl/workbook.xml",
-                        LXW_APP_DOCUMENT "spreadsheetml.sheet.main+xml");
 
     return content_types;
 
@@ -297,6 +295,16 @@ lxw_ct_add_worksheet_name(lxw_content_types *self, const char *name)
 }
 
 /*
+ * Add the name of a chartsheet to the ContentTypes overrides.
+ */
+void
+lxw_ct_add_chartsheet_name(lxw_content_types *self, const char *name)
+{
+    lxw_ct_add_override(self, name,
+                        LXW_APP_DOCUMENT "spreadsheetml.chartsheet+xml");
+}
+
+/*
  * Add the name of a chart to the ContentTypes overrides.
  */
 void
@@ -312,6 +320,25 @@ void
 lxw_ct_add_drawing_name(lxw_content_types *self, const char *name)
 {
     lxw_ct_add_override(self, name, LXW_APP_DOCUMENT "drawing+xml");
+}
+
+/*
+ * Add the name of a VML drawing to the ContentTypes overrides.
+ */
+void
+lxw_ct_add_vml_name(lxw_content_types *self)
+{
+    lxw_ct_add_default(self, "vml", LXW_APP_DOCUMENT "vmlDrawing");
+}
+
+/*
+ * Add the name of a comment to the ContentTypes overrides.
+ */
+void
+lxw_ct_add_comment_name(lxw_content_types *self, const char *name)
+{
+    lxw_ct_add_override(self, name,
+                        LXW_APP_DOCUMENT "spreadsheetml.comments+xml");
 }
 
 /*
@@ -342,4 +369,14 @@ lxw_ct_add_custom_properties(lxw_content_types *self)
 {
     lxw_ct_add_override(self, "/docProps/custom.xml",
                         LXW_APP_DOCUMENT "custom-properties+xml");
+}
+
+/*
+ * Add the metadata file to the ContentTypes overrides.
+ */
+void
+lxw_ct_add_metadata(lxw_content_types *self)
+{
+    lxw_ct_add_override(self, "/xl/metadata.xml",
+                        LXW_APP_DOCUMENT "spreadsheetml.sheetMetadata+xml");
 }

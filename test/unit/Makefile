@@ -2,7 +2,7 @@
 #
 # Makefile for libxlsxwriter library.
 #
-# Copyright 2014-2018, John McNamara, jmcnamara@cpan.org
+# Copyright 2014-2021, John McNamara, jmcnamara@cpan.org
 #
 
 # Keep the output quiet by default.
@@ -37,6 +37,10 @@ SRCS += $(wildcard styles/test*.c)
 SRCS += $(wildcard drawing/test*.c)
 SRCS += $(wildcard chart/test*.c)
 SRCS += $(wildcard custom/test*.c)
+SRCS += $(wildcard chartsheet/test*.c)
+SRCS += $(wildcard vml/test*.c)
+SRCS += $(wildcard comment/test*.c)
+SRCS += $(wildcard metadata/test*.c)
 # End of SRCS
 
 OBJS  = $(patsubst %.c,%.o,$(SRCS))
@@ -70,6 +74,10 @@ all :
 	$(Q)$(MAKE) -C drawing
 	$(Q)$(MAKE) -C chart
 	$(Q)$(MAKE) -C custom
+	$(Q)$(MAKE) -C chartsheet
+	$(Q)$(MAKE) -C vml
+	$(Q)$(MAKE) -C comment
+	$(Q)$(MAKE) -C metadata
 # END make all
 
 clean :
@@ -87,6 +95,10 @@ clean :
 	$(Q)$(MAKE) clean -C drawing
 	$(Q)$(MAKE) clean -C chart
 	$(Q)$(MAKE) clean -C custom
+	$(Q)$(MAKE) clean -C chartsheet
+	$(Q)$(MAKE) clean -C vml
+	$(Q)$(MAKE) clean -C comment
+	$(Q)$(MAKE) clean -C metadata
 # END make clean
 
 

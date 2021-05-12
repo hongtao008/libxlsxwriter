@@ -2,7 +2,7 @@
 #
 # Makefile for libxlsxwriter library.
 #
-# Copyright 2014-2018, John McNamara, jmcnamara@cpan.org
+# Copyright 2014-2021, John McNamara, jmcnamara@cpan.org
 #
 
 # Keep the output quiet by default.
@@ -24,3 +24,5 @@ docs:
 	$(Q)doxygen
 	$(Q)../dev/release/fix_dox.sh
 
+docs_doxygen_only:
+	$(Q)doxygen

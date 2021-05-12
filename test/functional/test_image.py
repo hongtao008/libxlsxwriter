@@ -2,9 +2,11 @@
 #
 # Tests for libxlsxwriter.
 #
-# Copyright 2014-2018, John McNamara, jmcnamara@cpan.org
+# Copyright 2014-2021, John McNamara, jmcnamara@cpan.org
 #
 
+import os
+import pytest
 import base_test_class
 
 class TestCompareXLSXFiles(base_test_class.XLSXBaseTest):
@@ -112,3 +114,79 @@ class TestCompareXLSXFiles(base_test_class.XLSXBaseTest):
 
     def test_image36(self):
         self.run_exe_test('test_image36')
+
+    def test_image44(self):
+        self.run_exe_test('test_image44')
+
+    def test_image45(self):
+        self.run_exe_test('test_image45')
+
+    def test_image46(self):
+        self.run_exe_test('test_image46')
+
+    def test_image47(self):
+        self.run_exe_test('test_image47')
+
+    # Some of the following tests require MD5 hash support to remove duplicate images.
+    @pytest.mark.skipif(os.environ.get('USE_NO_MD5'), reason="compiled without MD5 support")
+    def test_image48(self):
+        self.run_exe_test('test_image48')
+
+    @pytest.mark.skipif(os.environ.get('USE_NO_MD5'), reason="compiled without MD5 support")
+    def test_image49(self):
+        self.run_exe_test('test_image49')
+
+    @pytest.mark.skipif(os.environ.get('USE_NO_MD5'), reason="compiled without MD5 support")
+    def test_image50(self):
+        self.run_exe_test('test_image50')
+
+    @pytest.mark.skipif(os.environ.get('USE_NO_MD5'), reason="compiled without MD5 support")
+    def test_image51(self):
+        self.run_exe_test('test_image51')
+
+    def test_image52(self):
+        self.run_exe_test('test_image52')
+
+    def test_image53(self):
+        self.run_exe_test('test_image53')
+
+    def test_image54(self):
+        self.run_exe_test('test_image54')
+
+    def test_image55(self):
+        self.run_exe_test('test_image55')
+
+    def test_image56(self):
+        self.run_exe_test('test_image56')
+
+    def test_image57(self):
+        self.run_exe_test('test_image57')
+
+    # Test in-memory image handling.
+    def test_image81(self):
+        self.run_exe_test('test_image81', 'image01.xlsx')
+
+    def test_image82(self):
+        self.run_exe_test('test_image82')
+
+    def test_image83(self):
+        self.run_exe_test('test_image83', 'image02.xlsx')
+
+    @pytest.mark.skipif(os.environ.get('USE_NO_MD5'), reason="compiled without MD5 support")
+    def test_image86(self):
+        self.run_exe_test('test_image86', 'image48.xlsx')
+
+    @pytest.mark.skipif(os.environ.get('USE_NO_MD5'), reason="compiled without MD5 support")
+    def test_image87(self):
+        self.run_exe_test('test_image87', 'image50.xlsx')
+
+    @pytest.mark.skipif(os.environ.get('USE_NO_MD5'), reason="compiled without MD5 support")
+    def test_image88(self):
+        self.run_exe_test('test_image88', 'image54.xlsx')
+
+    # Test image description fields.
+    def test_image84(self):
+        self.run_exe_test('test_image84')
+
+    def test_image85(self):
+        self.run_exe_test('test_image85')
